@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Super Tic Tac Toe — Ultimate 9×9</title>
+<meta name="description" content="Play Super Tic Tac Toe 9x9 (Ultimate Tic Tac Toe) with friends or AI. Mobile-friendly, pulsing cyan UI — Designed by Edwin Sam K Reju.">
+<meta name="keywords" content="Ultimate Tic Tac Toe, Super Tic Tac Toe, 9x9 tic tac toe, hackathon game, Edwin Sam K Reju">
+<meta name="author" content="Edwin Sam K Reju">
+<style>
+  :root{
+    --bg:#07121a; --muted:#9fb; --x-color:#ff6b6b; --o-color:#6bd3ff; --cyan:cyan;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:linear-gradient(180deg,var(--bg),#041019);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--muted);display:flex;flex-direction:column;align-items:center;padding:12px}
+  header{width:100%;max-width:1200px;color:#eafcf3;margin-bottom:10px}
+  .top{display:flex;gap:12px;align-items:center;width:100%;max-width:1200px}
+  .title{flex:1}
+  h1{margin:0;font-size:20px}
+  .ad{width:320px;height:60px;background:#233045;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#dbeaf6}
+  .scoreboard{display:flex;gap:18px;align-items:center;margin:12px 0;color:#dbeaf6;flex-wrap:wrap}
+  .score{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:8px;font-weight:700}
+  .controls{display:flex;gap:8px;align-items:center}
+  select, button{background:#16394a;border:none;color:#eafcf3;padding:8px 10px;border-radius:8px;cursor:pointer}
+  #main-wrap{width:100%;max-width:1200px;display:flex;gap:16px;align-items:flex-start;justify-content:center}
+  .center-col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  canvas{background:#ffffff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.6);touch-action:manipulation;max-width:100%}
+  .hint{font-size:12px;color:#9fb}
+  /* Modals */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1200}
+  .modal{background:linear-gradient(180deg,#071826,#0b2530);border-radius:12px;padding:18px;min-width:280px;max-width:92vw;color:#dff3f8;box-shadow:0 10px 40px rgba(0,0,0,0.6);border:2px solid rgba(0,255,255,0.06)}
+  .modal h2{margin:0 0 8px 0}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+  input[type=text]{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:#02121a;color:#eafcf3}
+  .btn-primary{background:linear-gradient(90deg,var(--cyan),#4ef0d8);color:#022;padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+  .winnerTitle{font-size:22px;margin:6px 0 10px 0;text-shadow:0 6px 20px rgba(0,255,255,0.12)}
+  .small-muted{font-size:13px;color:#9fb;margin-top:6px}
+  /* Sticky and sidebar ads */
+  #sticky-ad{position:fixed;bottom:56px;left:0;width:100%;background:#233;background:#101821;border-top:2px solid rgba(0,255,255,0.06);padding:10px;text-align:center;color:#dfe;text-shadow:none;z-index:1000}
+  #sidebar-ad{position:fixed;right:8px;top:120px;width:140px;height:260px;background:#101821;border-left:2px solid rgba(0,255,255,0.06);border-radius:8px;padding:6px;color:#dbeaf6;display:flex;align-items:center;justify-content:center;z-index:995}
+  @media(max-width:980px){ #main-wrap{flex-direction:column;align-items:center} #sidebar-ad{display:none} #sticky-ad{bottom:80px} }
+  footer{background:#08131a;color:var(--cyan);padding:10px 12px;border-top:1px solid rgba(0,255,255,0.06);width:100%;text-align:center;position:relative;bottom:0}
+</style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Super Tic Tac Toe Online",
+  "author": { "@type": "Person", "name": "Edwin Sam K Reju" },
+  "genre": "Puzzle Game",
+  "playMode": ["SinglePlayer", "MultiPlayer"],
+  "applicationCategory": "Game",
+  "url": "https://srtictactoe.blogspot.com/",
+  "operatingSystem": "Any",
+  "description": "Play Super Tic Tac Toe online – a 9x9 ultimate tic-tac-toe challenge with AI or friends. Mobile-friendly, fun, and designed by Edwin Sam K Reju."
+}
+</script>
+
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div class="title">
+      <h1>Super Tic Tac Toe — Ultimate 9×9</h1>
+      <div class="hint">Rules: Play inside a small 3×3. The cell you play sends the opponent to the corresponding small board. If that board is won or full, opponent may play anywhere. Capture 3 small boards in a row to win the match.</div>
+    </div>
+    <div class="ad">Top Ad Space</div>
+  </div>
+
+  <div class="scoreboard">
+    <div class="score" id="xScoreCard">X: <span id="xName">Player X</span> — Matches: <span id="xWins">0</span></div>
+    <div class="score" id="oScoreCard">O: <span id="oName">Player O</span> — Matches: <span id="oWins">0</span></div>
+    <div class="score">Small Boards — X: <span id="xSmall">0</span> | O: <span id="oSmall">0</span></div>
+    <div style="flex:1"></div>
+    <div class="controls">
+      <label style="color:#dbeaf6">Mode</label>
+      <select id="modeSelect"><option value="two">Two Player</option><option value="ai">Vs AI (O)</option></select>
+      <button id="restartBtn">Restart Round</button>
+      <button id="resetScoresBtn">Reset Scores</button>
+      <button id="editNamesBtn">Edit Names</button>
+    </div>
+  </div>
+</header>
+
+<div id="main-wrap">
+  <div class="center-col">
+    <canvas id="board"></canvas>
+  </div>
+  <!-- sidebar ad -->
+  <div id="sidebar-ad">Sidebar Ad</div>
+</div>
+
+<!-- name modal -->
+<div id="nameModal" class="overlay">
+  <div class="modal">
+    <h2>Enter Player Names</h2>
+    <div class="field">
+      <label>Player X name</label>
+      <input id="inputX" type="text" placeholder="Player X">
+    </div>
+    <div class="field">
+      <label>Player O name</label>
+      <input id="inputO" type="text" placeholder="Player O or AI">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button id="startBtn" class="btn-primary">Start Game</button>
+    </div>
+    <div class="small-muted">Names persist until page reload.</div>
+  </div>
+</div>
+
+<!-- winner popup -->
+<div id="winnerPopup" class="overlay" style="display:none;">
+  <div class="modal">
+    <div style="height:8px"></div>
+    <div style="font-size:44px;color:var(--cyan)">✨</div>
+    <div class="winnerTitle" id="winnerText">Player X wins!</div>
+    <div class="small-muted" id="winnerSub">Nice play — start next round to continue the match.</div>
+    <div style="margin-top:12px;text-align:center"><button id="playAgainBtn" class="btn-primary">Play Again</button></div>
+  </div>
+</div>
+
+<!-- sticky bottom ad -->
+<div id="sticky-ad">Sticky Bottom Ad</div>
+<p>
+  
+ </p>
+<footer>Copyright 2022  |  Designed by Edwin Sam K Reju</footer>
+
+<script>
+/* ========= Full game logic (merged, copy-paste ready) ========= */
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+let DPR = Math.max(1, window.devicePixelRatio || 1);
+let CSS_SIZE = 640;
+let CELL = CSS_SIZE / 9;
+
+/* State */
+let cells = Array.from({length:9},()=>Array(9).fill(null));
+let smallWinners = Array(9).fill(null); // 'X'/'O'/'T' or null
+let activeBoard = null; // 0..8 or null
+let currentPlayer = 'X';
+let gameOver = false;
+let xMatchWins = 0, oMatchWins = 0;
+
+/* Names */
+let playerX = 'Player X', playerO = 'Player O';
+const xNameEl = document.getElementById('xName');
+const oNameEl = document.getElementById('oName');
+
+/* UI nodes */
+const xWinsEl = document.getElementById('xWins');
+const oWinsEl = document.getElementById('oWins');
+const xSmallEl = document.getElementById('xSmall');
+const oSmallEl = document.getElementById('oSmall');
+const modeSelect = document.getElementById('modeSelect');
+const restartBtn = document.getElementById('restartBtn');
+const resetScoresBtn = document.getElementById('resetScoresBtn');
+const editNamesBtn = document.getElementById('editNamesBtn');
+const nameModal = document.getElementById('nameModal');
+const inputX = document.getElementById('inputX');
+const inputO = document.getElementById('inputO');
+const startBtn = document.getElementById('startBtn');
+const winnerPopup = document.getElementById('winnerPopup');
+const winnerText = document.getElementById('winnerText');
+const winnerSub = document.getElementById('winnerSub');
+const playAgainBtn = document.getElementById('playAgainBtn');
+
+/* Helpers */
+const WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function bigIndexFromRC(r,c){return Math.floor(r/3)*3 + Math.floor(c/3);}
+function posInSmallFromRC(r,c){return (r%3)*3 + (c%3);}
+function isSmallFull(bi){ const br=Math.floor(bi/3)*3, bc=(bi%3)*3; for(let rr=0;rr<3;rr++) for(let cc=0;cc<3;cc++) if(cells[br+rr][bc+cc]===null) return false; return true; }
+function checkSmallWinner(bi){
+  const br=Math.floor(bi/3)*3, bc=(bi%3)*3;
+  const arr=[]; for(let r=0;r<3;r++) for(let c=0;c<3;c++) arr.push(cells[br+r][bc+c]);
+  for(const w of WINS) if(arr[w[0]] && arr[w[0]]===arr[w[1]] && arr[w[1]]===arr[w[2]]) return arr[w[0]];
+  if(arr.every(x=>x!==null)) return 'T';
+  return null;
+}
+function checkBigWinner(){
+  const b = smallWinners.map(v=> (v==='X' || v==='O')? v : null);
+  for(const w of WINS) if(b[w[0]] && b[w[0]]===b[w[1]] && b[w[1]]===b[w[2]]) return b[w[0]];
+  if(smallWinners.every(v=>v!==null)) return 'T';
+  return null;
+}
+function smallCellsCopy(bi){ const br=Math.floor(bi/3)*3, bc=(bi%3)*3; const a=[]; for(let rr=0;rr<3;rr++) for(let cc=0;cc<3;cc++) a.push(cells[br+rr][bc+cc]); return a; }
+function checkWinInArray(arr){ for(const w of WINS) if(arr[w[0]] && arr[w[0]]===arr[w[1]] && arr[w[1]]===arr[w[2]]) return arr[w[0]]; return null; }
+function legalMoves(){
+  const out=[];
+  if(activeBoard!==null && smallWinners[activeBoard]===null && !isSmallFull(activeBoard)){
+    const br=Math.floor(activeBoard/3)*3, bc=(activeBoard%3)*3;
+    for(let r=0;r<3;r++) for(let c=0;c<3;c++) if(cells[br+r][bc+c]===null) out.push({r:br+r,c:bc+c});
+    return out;
+  }
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(cells[r][c]===null && smallWinners[bigIndexFromRC(r,c)]===null) out.push({r,c});
+  return out;
+}
+
+/* Resize canvas */
+function resizeCanvas(){
+  const maxWidth = Math.min(window.innerWidth - 24, 920);
+  const maxHeight = window.innerHeight - 320;
+  CSS_SIZE = Math.max(300, Math.min(maxWidth, maxHeight));
+  CELL = CSS_SIZE / 9;
+  canvas.style.width = CSS_SIZE + 'px';
+  canvas.style.height = CSS_SIZE + 'px';
+  canvas.width = Math.round(CSS_SIZE * DPR);
+  canvas.height = Math.round(CSS_SIZE * DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize', ()=>{ resizeCanvas(); });
+
+/* Drawing (runs via RAF for pulsing) */
+let pulse = 0, dir = 1;
+function draw(){
+  // pulse animate
+  pulse += 0.02 * dir;
+  if(pulse>1){ pulse=1; dir=-1; } else if(pulse<0){ pulse=0; dir=1; }
+
+  ctx.clearRect(0,0,CSS_SIZE,CSS_SIZE);
+
+  // small grid
+  ctx.lineWidth = 1; ctx.strokeStyle = '#9aa9b1';
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++) ctx.strokeRect(c*CELL, r*CELL, CELL, CELL);
+
+  // big bold lines
+  ctx.lineWidth = 4; ctx.strokeStyle = '#000';
+  for(let i=0;i<=9;i+=3){ ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(CSS_SIZE,i*CELL); ctx.stroke(); ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,CSS_SIZE); ctx.stroke(); }
+
+  // active cyan outline border only
+  if(activeBoard!==null && smallWinners[activeBoard]===null && !isSmallFull(activeBoard)){
+    const br = Math.floor(activeBoard/3), bc = activeBoard%3;
+    const alpha = 0.35 + 0.45 * pulse;
+    ctx.save();
+    ctx.strokeStyle = `rgba(0,255,255,${alpha})`;
+    ctx.lineWidth = 6 + 2 * pulse;
+    ctx.shadowColor = 'rgba(0,255,255,0.25)';
+    ctx.shadowBlur = 8 * pulse;
+    ctx.strokeRect(bc*3*CELL + 3, br*3*CELL + 3, CELL*3 - 6, CELL*3 - 6);
+    ctx.restore();
+  }
+
+  // overlays for won small boards (big X/O)
+  for(let bi=0; bi<9; bi++){
+    const w = smallWinners[bi]; if(!w) continue;
+    const br = Math.floor(bi/3), bc = bi%3;
+    const cx = (bc*3 + 1.5) * CELL, cy = (br*3 + 1.5) * CELL;
+    ctx.save();
+    ctx.globalAlpha = 0.14;
+    if(w === 'X'){
+      ctx.lineWidth = CELL * 0.45;
+      ctx.strokeStyle = 'rgba(255,107,107,0.95)';
+      ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(cx - CELL, cy - CELL); ctx.lineTo(cx + CELL, cy + CELL);
+      ctx.moveTo(cx + CELL, cy - CELL); ctx.lineTo(cx - CELL, cy + CELL);
+      ctx.stroke();
+    } else if(w === 'O'){
+      ctx.lineWidth = CELL * 0.34;
+      ctx.strokeStyle = 'rgba(107,211,255,0.95)';
+      ctx.beginPath(); ctx.arc(cx, cy, CELL * 0.98, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // draw marks
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      const v = cells[r][c]; if(!v) continue;
+      const x = c*CELL + CELL/2, y = r*CELL + CELL/2;
+      ctx.save();
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font = `${Math.max(10, Math.floor(CELL*0.6))}px Arial Black`;
+      ctx.lineWidth = Math.max(2, Math.floor(CELL*0.06));
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.strokeText(v, x, y);
+      ctx.fillStyle = (v==='X')? getComputedStyle(document.documentElement).getPropertyValue('--x-color').trim() || '#ff6b6b' : getComputedStyle(document.documentElement).getPropertyValue('--o-color').trim() || '#6bd3ff';
+      ctx.fillText(v, x, y);
+      ctx.restore();
+    }
+  }
+
+  requestAnimationFrame(draw);
+}
+
+/* Input mapping */
+function toBoardRC(clientX, clientY){
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = CSS_SIZE / rect.width;
+  const scaleY = CSS_SIZE / rect.height;
+  const x = (clientX - rect.left) * scaleX;
+  const y = (clientY - rect.top) * scaleY;
+  const c = Math.floor(x / CELL), r = Math.floor(y / CELL);
+  return {r,c};
+}
+canvas.addEventListener('click', ev => { if(gameOver) return; const p = toBoardRC(ev.clientX, ev.clientY); if(p.r>=0 && p.r<9 && p.c>=0 && p.c<9) handlePlayerMove(p.r,p.c); });
+canvas.addEventListener('touchstart', ev => { ev.preventDefault(); if(gameOver) return; const t = ev.touches[0]; const p = toBoardRC(t.clientX, t.clientY); if(p.r>=0 && p.r<9 && p.c>=0 && p.c<9) handlePlayerMove(p.r,p.c); }, {passive:false});
+
+/* Moves */
+function handlePlayerMove(r,c){
+  if(makeMove(r,c)){
+    // accepted
+  }
+}
+function makeMove(r,c){
+  if(gameOver) return false;
+  if(cells[r][c] !== null) return false;
+  const bi = bigIndexFromRC(r,c);
+  if(!(activeBoard === null || activeBoard === bi)) return false;
+  if(smallWinners[bi] !== null) return false;
+  cells[r][c] = currentPlayer;
+
+  // update small
+  const smallRes = checkSmallWinner(bi);
+  if(smallRes && smallWinners[bi] === null) smallWinners[bi] = smallRes;
+  updateSmallCounts();
+
+  // check big
+  const bigRes = checkBigWinner();
+  if(bigRes){
+    gameOver = true;
+    if(bigRes === 'X'){ xMatchWins++; updateScoreboard(); showWinner(playerX); }
+    else if(bigRes === 'O'){ oMatchWins++; updateScoreboard(); showWinner(playerO); }
+    else showWinner(null);
+    return true;
+  }
+
+  // next active
+  const nextActive = posInSmallFromRC(r,c);
+  if(smallWinners[nextActive] === null && !isSmallFull(nextActive)) activeBoard = nextActive; else activeBoard = null;
+
+  // switch
+  currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
+
+  // AI turn
+  if(modeSelect.value === 'ai' && currentPlayer === 'O' && !gameOver) setTimeout(aiPlay, 260);
+  return true;
+}
+
+/* AI heuristics */
+function aiPlay(){
+  if(gameOver) return;
+  const moves = legalMoves();
+  if(moves.length === 0) return;
+  // win small
+  for(const m of moves){ const bi = bigIndexFromRC(m.r,m.c); const arr = smallCellsCopy(bi); const pos=(m.r%3)*3+(m.c%3); arr[pos]='O'; if(checkWinInArray(arr) === 'O'){ makeMove(m.r,m.c); return; } }
+  // block small
+  for(const m of moves){ const bi = bigIndexFromRC(m.r,m.c); const arr = smallCellsCopy(bi); const pos=(m.r%3)*3+(m.c%3); arr[pos]='X'; if(checkWinInArray(arr) === 'X'){ makeMove(m.r,m.c); return; } }
+  // center
+  const center = moves.find(m => (m.r%3 === 1 && m.c%3 === 1));
+  if(center){ makeMove(center.r, center.c); return; }
+  // force free next
+  for(const m of moves){ const next = (m.r%3)*3 + (m.c%3); if(smallWinners[next] !== null || isSmallFull(next)){ makeMove(m.r,m.c); return; } }
+  // random fallback
+  const pick = moves[Math.floor(Math.random()*moves.length)]; makeMove(pick.r,pick.c);
+}
+
+/* Scoreboard & UI */
+function updateSmallCounts(){ let x=0,o=0; for(const v of smallWinners){ if(v==='X') x++; if(v==='O') o++; } xSmallEl.textContent = x; oSmallEl.textContent = o; }
+function updateScoreboard(){ xWinsEl.textContent = xMatchWins; oWinsEl.textContent = oMatchWins; xNameEl.textContent = playerX; oNameEl.textContent = playerO; }
+
+/* Winner popup & name modal */
+function showWinner(winnerName){
+  if(winnerName === null){
+    winnerText.textContent = `It's a draw!`;
+    winnerSub.textContent = `No one wins this match — start a new round.`;
+  } else {
+    winnerText.textContent = `${winnerName} wins the match!`;
+    winnerSub.textContent = `${winnerName} captured 3 small boards in a row.`;
+  }
+  winnerPopup.style.display = 'flex';
+}
+playAgainBtn.addEventListener('click', ()=>{ winnerPopup.style.display='none'; startNewRound(false); });
+
+function openNameModal(){
+  nameModal.style.display = 'flex';
+  inputX.value = playerX==='Player X' ? '' : playerX;
+  inputO.value = playerO==='Player O' ? (modeSelect.value==='ai' ? 'AI Bot' : '') : playerO;
+}
+startBtn.addEventListener('click', ()=>{
+  const nx = inputX.value.trim(); const no = inputO.value.trim();
+  playerX = nx || 'Player X';
+  playerO = no || (modeSelect.value==='ai' ? 'AI Bot' : 'Player O');
+  nameModal.style.display = 'none';
+  updateScoreboard();
+});
+editNamesBtn.addEventListener('click', openNameModal);
+
+/* Restart & reset */
+restartBtn.addEventListener('click', ()=> startNewRound(false));
+resetScoresBtn.addEventListener('click', ()=>{ if(confirm('Reset match wins to zero?')){ xMatchWins=0; oMatchWins=0; updateScoreboard(); startNewRound(true); } });
+
+/* Start/Reset round */
+function startNewRound(resetMatches){
+  cells = Array.from({length:9},()=>Array(9).fill(null));
+  smallWinners = Array(9).fill(null);
+  activeBoard = null; currentPlayer = 'X'; gameOver=false;
+  if(resetMatches){ xMatchWins=0; oMatchWins=0; updateScoreboard(); }
+  updateSmallCounts();
+}
+
+/* Init */
+function init(){
+  resizeCanvas();
+  updateScoreboard();
+  updateSmallCounts();
+  requestAnimationFrame(draw);
+  openNameModal();
+}
+init();
+
+/* helpers used earlier */
+function checkWinInArray(arr){ for(const w of WINS) if(arr[w[0]] && arr[w[0]]===arr[w[1]] && arr[w[1]]===arr[w[2]]) return arr[w[0]]; return null; }
+function smallCellsCopy(bi){ const br=Math.floor(bi/3)*3, bc=(bi%3)*3; const a=[]; for(let rr=0;rr<3;rr++) for(let cc=0;cc<3;cc++) a.push(cells[br+rr][bc+cc]); return a; }
+function legalMoves(){ const out=[]; if(activeBoard!==null && smallWinners[activeBoard]===null && !isSmallFull(activeBoard)){ const br=Math.floor(activeBoard/3)*3, bc=(activeBoard%3)*3; for(let r=0;r<3;r++) for(let c=0;c<3;c++) if(cells[br+r][bc+c]===null) out.push({r:br+r,c:bc+c}); return out; } for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(cells[r][c]===null && smallWinners[bigIndexFromRC(r,c)]===null) out.push({r,c}); return out; }
+
+</script>
+</body>
+</html>
